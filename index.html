@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bengali Learning App — West Bengal</title>
+  <style>
+    /* ─── Reset & base ──────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #fdf8f2;
+      --surface:  #ffffff;
+      --border:   #e8ddd0;
+      --accent:   #c0392b;
+      --accent2:  #e67e22;
+      --text:     #2c1a0e;
+      --muted:    #7a6152;
+      --card-h:   320px;
+      --radius:   14px;
+      --shadow:   0 4px 20px rgba(0,0,0,.09);
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ─── Header ────────────────────────────────────────────── */
+    header {
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
+      color: #fff;
+      text-align: center;
+      padding: 2rem 1rem 1.4rem;
+    }
+    header h1 { font-size: 2rem; letter-spacing: .5px; }
+    header p  { font-size: .95rem; opacity: .88; margin-top: .3rem; }
+
+    /* ─── Nav tabs ──────────────────────────────────────────── */
+    nav {
+      display: flex;
+      justify-content: center;
+      gap: .5rem;
+      background: var(--surface);
+      border-bottom: 2px solid var(--border);
+      padding: .6rem 1rem;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    nav button {
+      background: none;
+      border: 2px solid transparent;
+      border-radius: 8px;
+      padding: .5rem 1.4rem;
+      font-size: .95rem;
+      cursor: pointer;
+      color: var(--muted);
+      font-weight: 600;
+      transition: all .2s;
+    }
+    nav button.active,
+    nav button:hover {
+      color: var(--accent);
+      border-color: var(--accent);
+      background: #fef2f0;
+    }
+
+    /* ─── Sections ──────────────────────────────────────────── */
+    main { max-width: 960px; margin: 0 auto; padding: 2rem 1rem 3rem; }
+    section { display: none; }
+    section.active { display: block; }
+
+    h2 {
+      font-size: 1.35rem;
+      color: var(--accent);
+      margin-bottom: 1.4rem;
+      padding-bottom: .5rem;
+      border-bottom: 2px solid var(--border);
+    }
+
+    /* ─── Alphabet grid ─────────────────────────────────────── */
+    .sub-heading {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--muted);
+      margin: 1.4rem 0 .8rem;
+      text-transform: uppercase;
+      letter-spacing: .8px;
+    }
+
+    .letter-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: .8rem;
+    }
+
+    .letter-card {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem .5rem;
+      text-align: center;
+      cursor: default;
+      transition: transform .15s, box-shadow .15s;
+      box-shadow: 0 2px 8px rgba(0,0,0,.05);
+    }
+    .letter-card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow);
+      border-color: var(--accent2);
+    }
+    .letter-card .bengali {
+      font-size: 2.6rem;
+      line-height: 1.1;
+      color: var(--accent);
+    }
+    .letter-card .roman {
+      font-size: .88rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-top: .35rem;
+    }
+    .letter-card .pron {
+      font-size: .78rem;
+      color: var(--muted);
+      margin-top: .2rem;
+      font-style: italic;
+    }
+
+    /* ─── Flashcard quiz ────────────────────────────────────── */
+    .quiz-controls {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: .5rem;
+      margin-bottom: 1.2rem;
+    }
+    .quiz-controls label {
+      font-size: .9rem;
+      color: var(--muted);
+      font-weight: 600;
+    }
+    .quiz-controls select {
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      padding: .35rem .7rem;
+      font-size: .9rem;
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+    }
+
+    .flashcard-area {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.4rem;
+    }
+
+    .progress-bar-wrap {
+      width: 100%;
+      max-width: 540px;
+      height: 6px;
+      background: var(--border);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      transition: width .3s ease;
+    }
+
+    .card-counter {
+      font-size: .85rem;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    /* 3-D flip card */
+    .flip-scene {
+      width: 340px;
+      height: var(--card-h);
+      perspective: 900px;
+      cursor: pointer;
+    }
+    .flip-card {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transform-style: preserve-3d;
+      transition: transform .55s cubic-bezier(.4,0,.2,1);
+    }
+    .flip-scene.flipped .flip-card { transform: rotateY(180deg); }
+
+    .flip-front, .flip-back {
+      position: absolute;
+      inset: 0;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      border-radius: var(--radius);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1.8rem;
+      box-shadow: var(--shadow);
+    }
+    .flip-front {
+      background: var(--surface);
+      border: 2px solid var(--border);
+    }
+    .flip-back {
+      background: linear-gradient(135deg, #fff8f5 0%, #fff3eb 100%);
+      border: 2px solid var(--accent2);
+      transform: rotateY(180deg);
+    }
+
+    .flip-front .big-bengali {
+      font-size: 5rem;
+      color: var(--accent);
+      line-height: 1;
+    }
+    .flip-front .card-type {
+      font-size: .78rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 1rem;
+    }
+    .flip-front .tap-hint {
+      font-size: .8rem;
+      color: var(--border);
+      margin-top: 1.5rem;
+    }
+
+    .flip-back .answer-roman {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--accent);
+    }
+    .flip-back .answer-pron {
+      font-size: 1rem;
+      color: var(--muted);
+      font-style: italic;
+      margin-top: .3rem;
+    }
+    .flip-back .answer-meaning {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-top: 1rem;
+      text-align: center;
+    }
+    .flip-back .bengali-small {
+      font-size: 2.5rem;
+      color: var(--accent2);
+      margin-top: .6rem;
+    }
+
+    .card-buttons {
+      display: flex;
+      gap: 1rem;
+    }
+    .btn {
+      padding: .65rem 1.6rem;
+      border: none;
+      border-radius: 8px;
+      font-size: .95rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform .12s, opacity .12s;
+    }
+    .btn:hover { transform: translateY(-2px); }
+    .btn:active { transform: scale(.97); }
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+    .btn-secondary {
+      background: var(--border);
+      color: var(--text);
+    }
+    .btn-shuffle {
+      background: var(--accent2);
+      color: #fff;
+    }
+
+    /* ─── Vocabulary list ───────────────────────────────────── */
+    .vocab-filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .5rem;
+      margin-bottom: 1.2rem;
+    }
+    .filter-btn {
+      padding: .4rem 1rem;
+      border: 1.5px solid var(--border);
+      border-radius: 99px;
+      background: var(--surface);
+      color: var(--muted);
+      font-size: .85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .filter-btn.active,
+    .filter-btn:hover {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .vocab-search {
+      width: 100%;
+      max-width: 340px;
+      padding: .55rem 1rem;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-size: .95rem;
+      color: var(--text);
+      background: var(--surface);
+      margin-bottom: 1rem;
+      outline: none;
+    }
+    .vocab-search:focus { border-color: var(--accent); }
+
+    .vocab-table-wrap { overflow-x: auto; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--surface);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+    thead { background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%); }
+    thead th {
+      color: #fff;
+      font-size: .85rem;
+      font-weight: 700;
+      text-align: left;
+      padding: .85rem 1rem;
+      text-transform: uppercase;
+      letter-spacing: .6px;
+    }
+    tbody tr { border-bottom: 1px solid var(--border); }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: #fef9f5; }
+    tbody td { padding: .85rem 1rem; font-size: .93rem; }
+    td.bengali-col { font-size: 1.6rem; color: var(--accent); }
+    td.roman-col { font-weight: 700; color: var(--text); }
+    td.pron-col { color: var(--muted); font-style: italic; }
+    td.english-col { color: var(--text); }
+    .tag {
+      display: inline-block;
+      font-size: .72rem;
+      font-weight: 700;
+      padding: .2rem .55rem;
+      border-radius: 99px;
+      background: #fef0eb;
+      color: var(--accent2);
+      border: 1px solid #f8d5c0;
+    }
+
+    /* ─── Responsive ────────────────────────────────────────── */
+    @media (max-width: 480px) {
+      header h1 { font-size: 1.5rem; }
+      .flip-scene { width: 290px; }
+      .flip-front .big-bengali { font-size: 4rem; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>বাংলা শিখি — Learn Bengali</h1>
+  <p>West Bengal (Kolkata) dialect · Alphabet · Flashcards · Vocabulary</p>
+</header>
+
+<nav>
+  <button class="active" onclick="showTab('alphabet', this)">Alphabet</button>
+  <button onclick="showTab('flashcards', this)">Flashcards</button>
+  <button onclick="showTab('vocabulary', this)">Vocabulary</button>
+</nav>
+
+<main>
+
+  <!-- ══════════════════ ALPHABET ══════════════════ -->
+  <section id="alphabet" class="active">
+    <h2>Bengali Alphabet · বাংলা বর্ণমালা</h2>
+
+    <p class="sub-heading">Vowels · স্বরবর্ণ</p>
+    <div class="letter-grid" id="vowel-grid"></div>
+
+    <p class="sub-heading">Consonants · ব্যঞ্জনবর্ণ</p>
+    <div class="letter-grid" id="consonant-grid"></div>
+  </section>
+
+  <!-- ══════════════════ FLASHCARDS ══════════════════ -->
+  <section id="flashcards">
+    <h2>Flashcard Quiz · ফ্ল্যাশকার্ড</h2>
+
+    <div class="quiz-controls">
+      <label for="deck-select">Deck:</label>
+      <select id="deck-select" onchange="loadDeck()">
+        <option value="vowels">Vowels</option>
+        <option value="consonants">Consonants</option>
+        <option value="vocabulary">Vocabulary</option>
+        <option value="all">All cards</option>
+      </select>
+    </div>
+
+    <div class="flashcard-area">
+      <div class="progress-bar-wrap">
+        <div class="progress-bar-fill" id="progress-fill" style="width:0%"></div>
+      </div>
+      <div class="card-counter" id="card-counter">Card 1 of 1</div>
+
+      <div class="flip-scene" id="flip-scene" onclick="flipCard()">
+        <div class="flip-card" id="flip-card">
+          <div class="flip-front">
+            <div class="big-bengali" id="fc-bengali"></div>
+            <div class="card-type" id="fc-type"></div>
+            <div class="tap-hint">Tap to reveal →</div>
+          </div>
+          <div class="flip-back">
+            <div class="bengali-small" id="fc-back-bengali"></div>
+            <div class="answer-roman" id="fc-roman"></div>
+            <div class="answer-pron" id="fc-pron"></div>
+            <div class="answer-meaning" id="fc-meaning"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-buttons">
+        <button class="btn btn-secondary" onclick="prevCard()">← Prev</button>
+        <button class="btn btn-shuffle" onclick="shuffleDeck()">Shuffle</button>
+        <button class="btn btn-primary" onclick="nextCard()">Next →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════ VOCABULARY ══════════════════ -->
+  <section id="vocabulary">
+    <h2>Vocabulary · শব্দভাণ্ডার</h2>
+
+    <input class="vocab-search" type="text" id="vocab-search"
+           placeholder="Search English, Bengali, or transliteration…"
+           oninput="renderVocab()" />
+
+    <div class="vocab-filters" id="vocab-filters"></div>
+
+    <div class="vocab-table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Bengali</th>
+            <th>Transliteration</th>
+            <th>Pronunciation</th>
+            <th>English</th>
+            <th>Category</th>
+          </tr>
+        </thead>
+        <tbody id="vocab-body"></tbody>
+      </table>
+    </div>
+  </section>
+
+</main>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+//  DATA
+// ══════════════════════════════════════════════════════════════
+
+const VOWELS = [
+  { bengali:'অ', roman:'ô',  pron:'like "o" in other'   },
+  { bengali:'আ', roman:'aa', pron:'like "a" in father'  },
+  { bengali:'ই', roman:'i',  pron:'like "i" in bit'     },
+  { bengali:'ঈ', roman:'ii', pron:'like "ee" in feet'   },
+  { bengali:'উ', roman:'u',  pron:'like "u" in put'     },
+  { bengali:'ঊ', roman:'uu', pron:'like "oo" in food'   },
+  { bengali:'ঋ', roman:'ri', pron:'like "ri" in river'  },
+  { bengali:'এ', roman:'e',  pron:'like "e" in gate'    },
+  { bengali:'ঐ', roman:'oi', pron:'like "oi" in oil'    },
+  { bengali:'ও', roman:'o',  pron:'like "o" in go'      },
+  { bengali:'ঔ', roman:'ou', pron:'like "ou" in out'    },
+];
+
+const CONSONANTS = [
+  { bengali:'ক', roman:'k',   pron:'"k" in kite'        },
+  { bengali:'খ', roman:'kh',  pron:'aspirated k'         },
+  { bengali:'গ', roman:'g',   pron:'"g" in go'           },
+  { bengali:'ঘ', roman:'gh',  pron:'aspirated g'         },
+  { bengali:'ঙ', roman:'ng',  pron:'"ng" in song'        },
+  { bengali:'চ', roman:'ch',  pron:'"ch" in chat'        },
+  { bengali:'ছ', roman:'chh', pron:'aspirated ch'        },
+  { bengali:'জ', roman:'j',   pron:'"j" in joy'          },
+  { bengali:'ঝ', roman:'jh',  pron:'aspirated j'         },
+  { bengali:'ঞ', roman:'ny',  pron:'"ny" in canyon'      },
+  { bengali:'ট', roman:'ṭ',   pron:'retroflex t'         },
+  { bengali:'ঠ', roman:'ṭh',  pron:'aspirated retroflex t'},
+  { bengali:'ড', roman:'ḍ',   pron:'retroflex d'         },
+  { bengali:'ঢ', roman:'ḍh',  pron:'aspirated retroflex d'},
+  { bengali:'ণ', roman:'ṇ',   pron:'retroflex n'         },
+  { bengali:'ত', roman:'t',   pron:'dental t (soft)'     },
+  { bengali:'থ', roman:'th',  pron:'aspirated dental t'  },
+  { bengali:'দ', roman:'d',   pron:'dental d (soft)'     },
+  { bengali:'ধ', roman:'dh',  pron:'aspirated dental d'  },
+  { bengali:'ন', roman:'n',   pron:'"n" in name'         },
+  { bengali:'প', roman:'p',   pron:'"p" in spin'         },
+  { bengali:'ফ', roman:'ph',  pron:'aspirated p / "f"'   },
+  { bengali:'ব', roman:'b',   pron:'"b" in bat'          },
+  { bengali:'ভ', roman:'bh',  pron:'aspirated b'         },
+  { bengali:'ম', roman:'m',   pron:'"m" in man'          },
+  { bengali:'য', roman:'y',   pron:'"y" in yes'          },
+  { bengali:'র', roman:'r',   pron:'soft rolled r'       },
+  { bengali:'ল', roman:'l',   pron:'"l" in love'         },
+  { bengali:'শ', roman:'sh',  pron:'"sh" in shoe'        },
+  { bengali:'ষ', roman:'ṣh',  pron:'retroflex sh'        },
+  { bengali:'স', roman:'s',   pron:'"s" in sun'          },
+  { bengali:'হ', roman:'h',   pron:'"h" in hat'          },
+  { bengali:'ড়', roman:'ṛ',   pron:'flapped r'           },
+  { bengali:'ঢ়', roman:'ṛh',  pron:'aspirated flapped r' },
+  { bengali:'য়', roman:'y',   pron:'semivowel y'         },
+  { bengali:'ৎ', roman:'t',   pron:'final unaspirated t' },
+];
+
+const VOCAB = [
+  // Greetings
+  { bengali:'নমস্কার',   roman:'nomoshkar',   pron:'naw-mosh-kar',    english:'Hello / Greetings',       cat:'Greetings' },
+  { bengali:'আলবিদা',   roman:'albida',      pron:'al-bi-da',        english:'Goodbye',                 cat:'Greetings' },
+  { bengali:'হ্যাঁ',    roman:'hya',         pron:'hyã',             english:'Yes',                     cat:'Greetings' },
+  { bengali:'না',       roman:'na',          pron:'na',              english:'No',                      cat:'Greetings' },
+  { bengali:'ধন্যবাদ',  roman:'dhonyobad',   pron:'dhon-yo-bad',     english:'Thank you',               cat:'Greetings' },
+  { bengali:'ক্ষমা করবেন', roman:'khoma korben', pron:'kho-ma kor-ben', english:'Please excuse me / Sorry', cat:'Greetings' },
+  { bengali:'কেমন আছেন', roman:'kemon achen', pron:'ke-mon a-chen',  english:'How are you? (formal)',   cat:'Greetings' },
+  { bengali:'ভালো আছি', roman:'bhalo achi',  pron:'bha-lo a-chi',   english:'I am fine',               cat:'Greetings' },
+  // Pronouns
+  { bengali:'আমি',      roman:'ami',         pron:'a-mi',            english:'I',                       cat:'Pronouns'  },
+  { bengali:'তুমি',     roman:'tumi',        pron:'tu-mi',           english:'You (informal)',           cat:'Pronouns'  },
+  { bengali:'আপনি',     roman:'apni',        pron:'ap-ni',           english:'You (formal)',             cat:'Pronouns'  },
+  { bengali:'সে',       roman:'she',         pron:'she',             english:'He / She',                cat:'Pronouns'  },
+  { bengali:'আমরা',     roman:'amra',        pron:'am-ra',           english:'We',                      cat:'Pronouns'  },
+  { bengali:'তারা',     roman:'tara',        pron:'ta-ra',           english:'They',                    cat:'Pronouns'  },
+  // Food & drink
+  { bengali:'জল',       roman:'jol',         pron:'jol',             english:'Water',                   cat:'Food'      },
+  { bengali:'ভাত',      roman:'bhat',        pron:'bhat',            english:'Cooked rice',             cat:'Food'      },
+  { bengali:'রুটি',     roman:'ruti',        pron:'ru-ti',           english:'Bread / Flatbread',       cat:'Food'      },
+  { bengali:'মাছ',      roman:'mach',        pron:'mach',            english:'Fish',                    cat:'Food'      },
+  { bengali:'দুধ',      roman:'dudh',        pron:'dudh',            english:'Milk',                    cat:'Food'      },
+  { bengali:'চা',       roman:'cha',         pron:'cha',             english:'Tea',                     cat:'Food'      },
+  { bengali:'ডাল',      roman:'dal',         pron:'dal',             english:'Lentil soup',             cat:'Food'      },
+  { bengali:'মিষ্টি',   roman:'mishti',      pron:'mish-ti',         english:'Sweet / Dessert',         cat:'Food'      },
+  // Numbers
+  { bengali:'এক',       roman:'ek',          pron:'ek',              english:'One (1)',                 cat:'Numbers'   },
+  { bengali:'দুই',      roman:'dui',         pron:'du-i',            english:'Two (2)',                 cat:'Numbers'   },
+  { bengali:'তিন',      roman:'tin',         pron:'tin',             english:'Three (3)',               cat:'Numbers'   },
+  { bengali:'চার',      roman:'char',        pron:'char',            english:'Four (4)',                cat:'Numbers'   },
+  { bengali:'পাঁচ',     roman:'panch',       pron:'panch',           english:'Five (5)',                cat:'Numbers'   },
+  { bengali:'ছয়',      roman:'chhoy',       pron:'chhoy',           english:'Six (6)',                 cat:'Numbers'   },
+  { bengali:'সাত',      roman:'shat',        pron:'shat',            english:'Seven (7)',               cat:'Numbers'   },
+  { bengali:'আট',       roman:'at',          pron:'at',              english:'Eight (8)',               cat:'Numbers'   },
+  { bengali:'নয়',      roman:'noy',         pron:'noy',             english:'Nine (9)',                cat:'Numbers'   },
+  { bengali:'দশ',       roman:'dosh',        pron:'dosh',            english:'Ten (10)',                cat:'Numbers'   },
+  // Everyday
+  { bengali:'বাড়ি',    roman:'bari',        pron:'ba-ri',           english:'Home / House',            cat:'Everyday'  },
+  { bengali:'বাজার',    roman:'bajar',       pron:'ba-jar',          english:'Market',                  cat:'Everyday'  },
+  { bengali:'বই',       roman:'boi',         pron:'boi',             english:'Book',                    cat:'Everyday'  },
+  { bengali:'কলম',      roman:'kolom',       pron:'ko-lom',          english:'Pen',                     cat:'Everyday'  },
+  { bengali:'স্কুল',    roman:'skul',        pron:'skul',            english:'School',                  cat:'Everyday'  },
+  { bengali:'গাড়ি',    roman:'gari',        pron:'ga-ri',           english:'Car / Vehicle',           cat:'Everyday'  },
+  { bengali:'দোকান',    roman:'dokan',       pron:'do-kan',          english:'Shop / Store',            cat:'Everyday'  },
+  { bengali:'রাস্তা',   roman:'rasta',       pron:'ras-ta',          english:'Road / Street',           cat:'Everyday'  },
+  // Time
+  { bengali:'সকাল',     roman:'shokal',      pron:'sho-kal',         english:'Morning',                 cat:'Time'      },
+  { bengali:'দুপুর',    roman:'dupur',       pron:'du-pur',          english:'Noon / Midday',           cat:'Time'      },
+  { bengali:'বিকেল',    roman:'bikel',       pron:'bi-kel',          english:'Afternoon / Evening',     cat:'Time'      },
+  { bengali:'রাত',      roman:'rat',         pron:'rat',             english:'Night',                   cat:'Time'      },
+  { bengali:'দিন',      roman:'din',         pron:'din',             english:'Day',                     cat:'Time'      },
+  { bengali:'আজ',       roman:'aj',          pron:'aj',              english:'Today',                   cat:'Time'      },
+  { bengali:'কাল',      roman:'kal',         pron:'kal',             english:'Yesterday / Tomorrow',    cat:'Time'      },
+  // Adjectives
+  { bengali:'ভালো',     roman:'bhalo',       pron:'bha-lo',          english:'Good',                    cat:'Adjectives'},
+  { bengali:'খারাপ',    roman:'kharap',      pron:'kha-rap',         english:'Bad',                     cat:'Adjectives'},
+  { bengali:'বড়',      roman:'boro',        pron:'bo-ro',           english:'Big / Large',             cat:'Adjectives'},
+  { bengali:'ছোট',      roman:'chhoto',      pron:'chho-to',         english:'Small / Little',          cat:'Adjectives'},
+  { bengali:'সুন্দর',   roman:'shundor',     pron:'shun-dor',        english:'Beautiful',               cat:'Adjectives'},
+  { bengali:'গরম',      roman:'gorom',       pron:'go-rom',          english:'Hot / Warm',              cat:'Adjectives'},
+  { bengali:'ঠান্ডা',   roman:'thanda',      pron:'than-da',         english:'Cold',                    cat:'Adjectives'},
+];
+
+// ══════════════════════════════════════════════════════════════
+//  ALPHABET
+// ══════════════════════════════════════════════════════════════
+function buildAlphabet() {
+  buildGrid('vowel-grid',     VOWELS,     'Vowel');
+  buildGrid('consonant-grid', CONSONANTS, 'Consonant');
+}
+
+function buildGrid(id, data, type) {
+  const grid = document.getElementById(id);
+  grid.innerHTML = data.map(l => `
+    <div class="letter-card">
+      <div class="bengali">${l.bengali}</div>
+      <div class="roman">${l.roman}</div>
+      <div class="pron">${l.pron}</div>
+    </div>`).join('');
+}
+
+// ══════════════════════════════════════════════════════════════
+//  FLASHCARDS
+// ══════════════════════════════════════════════════════════════
+let deck = [];
+let deckIndex = 0;
+let isFlipped = false;
+
+function buildFlashCard(item) {
+  // Normalise vocab vs letter cards
+  return {
+    bengali:  item.bengali,
+    roman:    item.roman,
+    pron:     item.pron,
+    meaning:  item.english || '',          // vocab only
+    type:     item.english ? 'Vocabulary' : (VOWELS.includes(item) ? 'Vowel' : 'Consonant'),
+  };
+}
+
+function loadDeck() {
+  const val = document.getElementById('deck-select').value;
+  const raw = val === 'vowels'      ? VOWELS
+            : val === 'consonants'  ? CONSONANTS
+            : val === 'vocabulary'  ? VOCAB
+            : [...VOWELS, ...CONSONANTS, ...VOCAB];
+  deck = raw.map(buildFlashCard);
+  deckIndex = 0;
+  renderCard();
+}
+
+function renderCard() {
+  if (!deck.length) return;
+  const c = deck[deckIndex];
+
+  // Reset flip
+  isFlipped = false;
+  document.getElementById('flip-scene').classList.remove('flipped');
+
+  document.getElementById('fc-bengali').textContent     = c.bengali;
+  document.getElementById('fc-type').textContent        = c.type;
+  document.getElementById('fc-back-bengali').textContent = c.bengali;
+  document.getElementById('fc-roman').textContent       = c.roman;
+  document.getElementById('fc-pron').textContent        = c.pron;
+  document.getElementById('fc-meaning').textContent     = c.meaning;
+
+  const pct = ((deckIndex + 1) / deck.length) * 100;
+  document.getElementById('progress-fill').style.width  = pct + '%';
+  document.getElementById('card-counter').textContent   =
+    `Card ${deckIndex + 1} of ${deck.length}`;
+}
+
+function flipCard() {
+  isFlipped = !isFlipped;
+  document.getElementById('flip-scene').classList.toggle('flipped', isFlipped);
+}
+
+function nextCard() {
+  deckIndex = (deckIndex + 1) % deck.length;
+  renderCard();
+}
+
+function prevCard() {
+  deckIndex = (deckIndex - 1 + deck.length) % deck.length;
+  renderCard();
+}
+
+function shuffleDeck() {
+  for (let i = deck.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [deck[i], deck[j]] = [deck[j], deck[i]];
+  }
+  deckIndex = 0;
+  renderCard();
+}
+
+// ══════════════════════════════════════════════════════════════
+//  VOCABULARY
+// ══════════════════════════════════════════════════════════════
+let activeFilter = 'All';
+
+function buildVocabFilters() {
+  const cats = ['All', ...new Set(VOCAB.map(v => v.cat))];
+  const wrap = document.getElementById('vocab-filters');
+  wrap.innerHTML = cats.map(c => `
+    <button class="filter-btn${c === 'All' ? ' active' : ''}"
+            onclick="setFilter('${c}', this)">${c}</button>`).join('');
+}
+
+function setFilter(cat, btn) {
+  activeFilter = cat;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderVocab();
+}
+
+function renderVocab() {
+  const q = document.getElementById('vocab-search').value.toLowerCase().trim();
+  const rows = VOCAB.filter(v => {
+    const catOk  = activeFilter === 'All' || v.cat === activeFilter;
+    const searchOk = !q ||
+      v.english.toLowerCase().includes(q) ||
+      v.roman.toLowerCase().includes(q)   ||
+      v.bengali.includes(q);
+    return catOk && searchOk;
+  });
+
+  const tbody = document.getElementById('vocab-body');
+  if (!rows.length) {
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--muted)">No results found.</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = rows.map(v => `
+    <tr>
+      <td class="bengali-col">${v.bengali}</td>
+      <td class="roman-col">${v.roman}</td>
+      <td class="pron-col">${v.pron}</td>
+      <td class="english-col">${v.english}</td>
+      <td><span class="tag">${v.cat}</span></td>
+    </tr>`).join('');
+}
+
+// ══════════════════════════════════════════════════════════════
+//  TAB NAVIGATION
+// ══════════════════════════════════════════════════════════════
+function showTab(id, btn) {
+  document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ══════════════════════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════════════════════
+buildAlphabet();
+buildVocabFilters();
+renderVocab();
+loadDeck();
+
+// Keyboard nav for flashcards
+document.addEventListener('keydown', e => {
+  const fc = document.getElementById('flashcards');
+  if (!fc.classList.contains('active')) return;
+  if (e.key === 'ArrowRight') nextCard();
+  if (e.key === 'ArrowLeft')  prevCard();
+  if (e.key === ' ')          { e.preventDefault(); flipCard(); }
+});
+</script>
+</body>
+</html>
